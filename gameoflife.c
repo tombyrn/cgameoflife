@@ -8,7 +8,7 @@
 #define false 0
 #define bool int
 
-#define SLEEP_TIME 1000000 * 1 // microseconds
+#define SLEEP_TIME 1
 
 typedef struct cell{
     int value;
@@ -22,8 +22,8 @@ typedef struct cell{
     struct cell *tl, *tm, *tr, *ml, *mr, *bl, *bm, *br;
 } cell;
 
-#define WIDTH 220
-#define HEIGHT 70
+#define WIDTH 200
+#define HEIGHT 50
 #define SEED_AMT (WIDTH*HEIGHT)/8
 
 cell cell_matrix[HEIGHT][WIDTH] = {0};
@@ -104,7 +104,7 @@ int living_neighbors(cell* c, int i, int j){
     int count =  0;
 
     // set top left neighbor cell
-    if((i-1 >= 0 || j-1 >= 0) && cell_matrix[i-1][j-1].alive)
+    if((i-1 >= 0 && j-1 >= 0) && cell_matrix[i-1][j-1].alive)
         count++;
 
     // set top middle neighbor cell
@@ -112,8 +112,10 @@ int living_neighbors(cell* c, int i, int j){
         count++;
 
     // set top right neighbor cell
-    if((i-1 >= 0 || j+1 < WIDTH) && cell_matrix[i-1][j+1].alive)
+    if((i-1 >= 0 && j+1 < WIDTH) && cell_matrix[i-1][j+1].alive)
         count++;
+
+
 
     // set middle left neighbor cell
     if((j-1 >= 0) && cell_matrix[i][j-1].alive)
@@ -122,8 +124,11 @@ int living_neighbors(cell* c, int i, int j){
     // set middle right neighbor cell
     if((j+1 < WIDTH) && cell_matrix[i][j+1].alive)
         count++;
+
+
+
     // set bottom left neighbor cell
-    if((i+1 < HEIGHT || j-1 >= 0) && cell_matrix[i+1][j-1].alive)
+    if((i+1 < HEIGHT && j-1 >= 0) && cell_matrix[i+1][j-1].alive)
         count++;
 
     // set top middle neighbor cell
@@ -131,7 +136,7 @@ int living_neighbors(cell* c, int i, int j){
         count++;
 
     // set top right neighbor cell
-    if((i+1 < HEIGHT || j+1 < WIDTH) && cell_matrix[i+1][j+1].alive)
+    if((i+1 < HEIGHT && j+1 < WIDTH) && cell_matrix[i+1][j+1].alive)
         count++;
         // (*c).br = &(cell_matrix[i+1][j+1]);
 
@@ -157,14 +162,14 @@ void draw_grid(){
         }
         putchar('\n');
     }
-    usleep(SLEEP_TIME);
+    sleep(SLEEP_TIME);
 }
 
 void seed(){
     for(int c = 0; c < SEED_AMT; c++){
         int i = rand() % HEIGHT;
         int j = rand() % WIDTH;
-        // printf("%d\t%d\n", i, j);
+
         bring_cell_to_life(&(cell_matrix[i][j]));
     }
 }
@@ -176,12 +181,8 @@ void next_generation(){
             if(cell_matrix[i][j].alive){
                 if(live_neighbors < 2 || live_neighbors > 3)
                     kill_cell(&(cell_matrix[i][j]));
-                // if(live_neighbors == 2 ||  live_neighbors == 3)
-                //     bring_cell_to_life(&(cell_matrix[i][j]));
-                // if(live_neighbors > 3)
             }
-            else{
-                if(live_neighbors == 3)
+            else if(live_neighbors == 3){
                     bring_cell_to_life(&(cell_matrix[i][j]));
             }
         }
@@ -194,7 +195,6 @@ int main() {
 
     init_grid();
     seed();
-
 
     while(1){
         printf("\x1b[2J\x1b[H");

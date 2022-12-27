@@ -1,18 +1,18 @@
-# the compiler: gcc for C program, define as clang for C
-  CC = clang
+# the compiler: gcc for C program, define as g++ for C++
+CC = clang
 
-  # compiler flags:
-  #  -O3 enables optimization to speedup code
+# compiler flags:
+#  -g    adds debugging information to the executable file
+#  -Wall turns on most, but not all, compiler warnings
+CFLAGS  = -O3 -g -std=c17 
 
-  CFLAGS  = -03 
+# the build target executable:
+TARGET = gameoflife
 
-  # the build target executable:
-  TARGET = myprog
+all: $(TARGET)
 
-  all: $(TARGET)
+$(TARGET): $(TARGET).c
+	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c
 
-  $(TARGET): $(TARGET).c
-  	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c
-
-  clean:
-  	$(RM) $(TARGET)
+clean:
+	$(RM) $(TARGET)
