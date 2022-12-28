@@ -9,9 +9,12 @@
 #define bool int
 
 #define SLEEP_TIME 1
+#define WIDTH 200
+#define HEIGHT 60
+#define SEED_AMT (WIDTH*HEIGHT)/20
 
 typedef struct cell{
-    int value;
+    char value;
     bool alive;
     // cells neighbors (null if out of bounds);
     /*
@@ -22,32 +25,27 @@ typedef struct cell{
     struct cell *tl, *tm, *tr, *ml, *mr, *bl, *bm, *br;
 } cell;
 
-#define WIDTH 200
-#define HEIGHT 50
-#define SEED_AMT (WIDTH*HEIGHT)/8
+
 
 cell cell_matrix[HEIGHT][WIDTH] = {0};
-char buffer[HEIGHT][WIDTH] = {0};
 
 const char bgChar = '#';
 
+// set cell to alive
 void bring_cell_to_life(cell* c){
-    int rand_char = rand() % 3;
+    int rand_char = (rand() % 93)+33; // generate 33-126 in ascii
 
-    if(rand_char == 0)
-        (*c).value = 'O';
-    if(rand_char == 1)
-        (*c).value = '#';
-    if(rand_char == 2)
-        (*c).value = '$';
+    (*c).value = rand_char;
     (*c).alive = true;
 }
 
+// set cell to dead
 void kill_cell(cell* c){
     (*c).value = ' ';
     (*c).alive = false;
 }
 
+// checks if neigboring cells around *c exist, if they don't set their pointer to NULL
 void handle_neighbors(cell* c, int i, int j){
 
     // set top left neighbor cell
@@ -103,47 +101,44 @@ void handle_neighbors(cell* c, int i, int j){
 int living_neighbors(cell* c, int i, int j){
     int count =  0;
 
-    // set top left neighbor cell
+    // count upper row of live neighbors
     if((i-1 >= 0 && j-1 >= 0) && cell_matrix[i-1][j-1].alive)
         count++;
 
-    // set top middle neighbor cell
+
     if((i-1 >= 0) && cell_matrix[i-1][j].alive)
         count++;
 
-    // set top right neighbor cell
+
     if((i-1 >= 0 && j+1 < WIDTH) && cell_matrix[i-1][j+1].alive)
         count++;
 
 
 
-    // set middle left neighbor cell
+    // count live cells to left or right
     if((j-1 >= 0) && cell_matrix[i][j-1].alive)
         count++;
 
-    // set middle right neighbor cell
     if((j+1 < WIDTH) && cell_matrix[i][j+1].alive)
         count++;
 
 
 
-    // set bottom left neighbor cell
+    // count bottom row of live neighbors
     if((i+1 < HEIGHT && j-1 >= 0) && cell_matrix[i+1][j-1].alive)
         count++;
 
-    // set top middle neighbor cell
     if((i+1 < HEIGHT) && cell_matrix[i+1][j].alive)
         count++;
 
-    // set top right neighbor cell
     if((i+1 < HEIGHT && j+1 < WIDTH) && cell_matrix[i+1][j+1].alive)
         count++;
-        // (*c).br = &(cell_matrix[i+1][j+1]);
 
     return count;
     
 }
 
+// initialize every cell in cell_matrix to dead and set their neighbors
 void init_grid(){
     for(int i = 0; i < HEIGHT; i++){
         for(int j = 0; j < WIDTH; j++){
@@ -156,9 +151,9 @@ void init_grid(){
 void draw_grid(){
     for(int i = 0; i < HEIGHT; i++){
         for(int j = 0; j < WIDTH; j++){
-            if(&(cell_matrix[i][j].value) !=  NULL)
-                buffer[i][j] = cell_matrix[i][j].value;
-            putchar(buffer[i][j]);
+            // if(&(cell_matrix[i][j].value) !=  NULL)
+            //     buffer[i][j] = cell_matrix[i][j].value;
+            putchar(cell_matrix[i][j].value);
         }
         putchar('\n');
     }
@@ -173,15 +168,22 @@ void seed(){
         bring_cell_to_life(&(cell_matrix[i][j]));
     }
 }
-
+/*
+    1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+    2. Any live cell with two or three live neighbours lives on to the next generation.
+    3. Any live cell with more than three live neighbours dies, as if by overpopulation.
+    4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+*/
 void next_generation(){
     for(int i = 0; i < HEIGHT; i++){
         for(int j = 0; j < WIDTH; j++){
             int live_neighbors = living_neighbors(&(cell_matrix[i][j]), i, j);
             if(cell_matrix[i][j].alive){
+                // Rules 1-3
                 if(live_neighbors < 2 || live_neighbors > 3)
                     kill_cell(&(cell_matrix[i][j]));
             }
+            // Rule 4s
             else if(live_neighbors == 3){
                     bring_cell_to_life(&(cell_matrix[i][j]));
             }
